@@ -1,0 +1,118 @@
+version: '3.7'
+services:
+  discovery-server-container:
+    build: ./discovery-server
+    restart: always
+    networks:
+     - sfd-microservice-example-network
+    ports:
+      - "8761:8761"
+    depends_on:
+     - mongodb-container
+
+  api-gateway-container:
+    build: ./api-gateway
+    networks:
+     - sfd-microservice-example-network
+    depends_on:
+     - discovery-server-container
+    restart: always
+    ports:
+      - "8084:8084"
+
+  order-service-container:
+    build: ./order-service
+    restart: on-failure
+    networks:
+     - sfd-microservice-example-network
+    depends_on:
+     - discovery-server-container
+     - api-gateway-container
+     - zookeeper-container
+     - kafka-manager-container
+     - inventory-service-container
+     - mongodb-container
+    ports:
+      - "8081:8081"
+
+  inventory-service-container:
+     restart: on-failure
+     build: ./inventory-service
+     networks:
+      - sfd-microservice-example-network
+     ports:
+       - "8082:8082"
+     depends_on:
+      - discovery-server-container
+      - api-gateway-container
+      - zookeeper-container
+      - kafka-manager-container
+      - mongodb-container
+
+  kafka-manager-container:
+    build: ./kafka-manager-service
+    restart: on-failure
+    networks:
+     - sfd-microservice-example-network
+    depends_on:
+     - api-gateway-container
+     - discovery-server-container
+     - zookeeper-container
+     - kafka-broker-container
+     - mongodb-container
+    ports:
+      - "8085:8085"
+  payment-service-container:
+    build: ./payment-service
+    restart: on-failure
+    networks:
+     - sfd-microservice-example-network
+    depends_on:
+     - api-gateway-container
+     - discovery-server-container
+     - zookeeper-container
+     - kafka-broker-container
+     - mongodb-container
+    ports:
+      - "8086:8086"
+
+  mongodb-container:
+    image: mongo:latest
+    restart: always
+    networks:
+     - sfd-microservice-example-network
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: mongopw
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data_container:/data/db
+
+  zookeeper-container:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - 22181:2181
+
+  kafka-broker-container:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper-container
+    ports:
+      - 29092:29092
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-container:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-broker-container:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+networks:
+  sfd-microservice-example-network:
+    driver: bridge
+volumes:
+ mongodb_data_container: {}

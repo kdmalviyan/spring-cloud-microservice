@@ -1,0 +1,32 @@
+server:
+  port: 8082
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+      instance:
+        appname: inventory-service
+instance:
+  preferIpAddress: true
+spring:
+  application:
+    name: inventory-service
+  data:
+    mongodb:
+      database: inventory-mongo-db
+      host: localhost
+      port: 27017
+
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: [ "health","prometheus", "metrics" ]
+  endpoint:
+    health:
+      show-details: always
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
