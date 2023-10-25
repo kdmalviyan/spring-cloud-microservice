@@ -3,6 +3,12 @@ eureka:
     serviceUrl:
       defaultZone: http://discovery-server-container:8761/eureka/
 spring:
+  kafka:
+    bootstrap-servers: kafka-broker-container:9092,localhost:29092
+    admin:
+      auto-create: true
+      fail-fast: true
+      close-timeout: 1
   data:
     mongodb:
       database: inventory-mongo-db

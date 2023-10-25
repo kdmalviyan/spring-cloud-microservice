@@ -8,9 +8,17 @@ eureka:
         appname: kafka-manager
 instance:
   preferIpAddress: true
+
 spring:
   application:
     name: kafka-manager
+  kafka:
+    bootstrap-servers: localhost:29092,localhost:9092
+    admin:
+      auto-create: true
+      fail-fast: true
+      close-timeout: 1
+
 management:
   endpoints:
     web:

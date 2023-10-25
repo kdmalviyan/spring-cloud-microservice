@@ -11,6 +11,12 @@ instance:
 spring:
   application:
     name: inventory-service
+  kafka:
+    bootstrap-servers: localhost:29092,localhost:9092
+    admin:
+      auto-create: true
+      fail-fast: true
+      close-timeout: 1
   data:
     mongodb:
       database: inventory-mongo-db
